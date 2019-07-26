@@ -33,74 +33,73 @@
   
   var users = new Array(); 
   var myPath = new paper.Path(); 
-  var count = users.length; 
-  var id; 
+  //var count = users.length;
+  var num = Math.floor(Math.random() * 10000);
+  var color; 
+  var colorOptions = ["red", "green", "yellow"];
   
-  
-    tool.onMouseMove = function(e) {
+  function colorPicker() {
+    if (users.length === 0) {
+      color = colorOptions[0];
+      colorOptions[0] = "empty";
+    }
+    else { 
+      //iterate through colors and pick one that isn't === "empty" 
       
+    }
+  }
+  
+  colorPicker();
+  var idmsg = '{"name": "id", "num": ' + num.toString() +', "color": "'+ color +'"}';
+  console.log(idmsg);
+  socket.onopen = function(event) {
+    socket.send(idmsg);
+  } ;
+  //socket.send(idmsg);
+  
+
+  //checkUser();
+  /*name my user, send the user name to open screens, open screens will name 
+  on load 
+  */
+
+  
+  //if no input then just keep going 
+  
+  
+  
+    tool.onMouseMove = function(e) {      
       //need to change colors here 
       myPath.strokeColor = "black";
-
-      console.log(self.window.name);
-      
-      var cur = [users, [e.point.x, e.point.y]];
-      var strPoint = JSON.stringify(cur);
-      socket.send(strPoint);      
+      var cur = [e.point.x, e.point.y];
+      var val = '{"name": "point", "value": [' + cur.toString() + ']}';
+      //var val = '{"name": "point", "value": [0, 2]}';
+      socket.send(val);      
     }
     
     
     //triggered when receiving a message from the server
     socket.onmessage = function(msg) {
       //this receives the x and y coordinates and updates the screens accordingly, 
-      console.log(msg);
-      pt = JSON.parse(msg.data);
-      //console.log(pt);
+      console.log(msg.data);
       
-      //checkUser(); //should have given each user a unique id 
+      pt = JSON.parse(msg.data); //does this convert it back into an array ? Where did the brackets go? 
       
-      //console.log("users before: ", users);
-      users = pt[0];
-      //console.log("users after: ", users);
-      //console.log("message recieved: ", msg.data);
-      //only run update screen if it's another screen, not the og. ? 
-      updateScreen(pt[1]);  
-    } 
-    
-    //it adds a user name 
-    function checkUser() {
-       if (users.length === 0) {
-        addNewUser();
+      if (pt.name === "point") {
+        updateScreen(pt.value);
       } 
-      else {
-        var match = false; 
-        for (x in users) {
-          console.log("x", users[x]);
-          console.log("id", id);
-          if  (id === users[x]) {
-            console.log("this id already exists");
-            match = true;
-          }        
-        }
-        //so if this user doesn't exist 
-        if (match === false) {
-            addNewUser()
-        }
+      
+      if (pt.name === "id") {
+        users.push(pt.num);
+        var updatedUsers = '{"name": "users", "value": [' + users.toString() + ']}';
+        socket.send(updatedUsers);
       }
-    }
-    
-    //this will add the position of my moust to path so it should update the drawing 
-    //make an array and add it to pastpoints array 
-    
-    function addNewUser(){
-        count += 1;
-        id = "screen" + count.toString();
-        users.push(id);
-        console.log("user", users[0]);   
+      if (pt.name === "users"){
+        console.log("users len: ", users);
+        users = pt.value;
+        console.log("users len: ", users);
+      }
     } 
-    
-  
-    
     
     function updateScreen(pt) {
       var temp = new paper.Point(pt); 
