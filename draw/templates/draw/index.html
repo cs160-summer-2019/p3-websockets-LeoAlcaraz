@@ -27,9 +27,90 @@
 
     // getting the URL (you may want to use for Exercise 3)
     var url = window.location.href;
+    var socket = new WebSocket('wss://p3-websockets-leoalcaraz-lalcaraz-guzman403574.codeanyapp.com/ws/draw');  
+   
+  var pastPoints = new Array();  
+  
+  var users = new Array(); 
+  var myPath = new paper.Path(); 
+  var count = users.length; 
+  var id; 
+  
+  
+    tool.onMouseMove = function(e) {
+      
+      //need to change colors here 
+      myPath.strokeColor = "black";
 
-    // var socket = new WebSocket(
-    //     'wss://<your url here>/ws/draw');
+      console.log(self.window.name);
+      
+      var cur = [users, [e.point.x, e.point.y]];
+      var strPoint = JSON.stringify(cur);
+      socket.send(strPoint);      
+    }
+    
+    
+    //triggered when receiving a message from the server
+    socket.onmessage = function(msg) {
+      //this receives the x and y coordinates and updates the screens accordingly, 
+      console.log(msg);
+      pt = JSON.parse(msg.data);
+      //console.log(pt);
+      
+      //checkUser(); //should have given each user a unique id 
+      
+      //console.log("users before: ", users);
+      users = pt[0];
+      //console.log("users after: ", users);
+      //console.log("message recieved: ", msg.data);
+      //only run update screen if it's another screen, not the og. ? 
+      updateScreen(pt[1]);  
+    } 
+    
+    //it adds a user name 
+    function checkUser() {
+       if (users.length === 0) {
+        addNewUser();
+      } 
+      else {
+        var match = false; 
+        for (x in users) {
+          console.log("x", users[x]);
+          console.log("id", id);
+          if  (id === users[x]) {
+            console.log("this id already exists");
+            match = true;
+          }        
+        }
+        //so if this user doesn't exist 
+        if (match === false) {
+            addNewUser()
+        }
+      }
+    }
+    
+    //this will add the position of my moust to path so it should update the drawing 
+    //make an array and add it to pastpoints array 
+    
+    function addNewUser(){
+        count += 1;
+        id = "screen" + count.toString();
+        users.push(id);
+        console.log("user", users[0]);   
+    } 
+    
+  
+    
+    
+    function updateScreen(pt) {
+      var temp = new paper.Point(pt); 
+      myPath.add(temp);
+    }
+  
+    
+    socket.onclose = function(e) {
+      console.error('Chat socket closed unexpectedly.');
+    }
 
 
 </script>
