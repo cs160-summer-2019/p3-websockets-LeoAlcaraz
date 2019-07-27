@@ -33,44 +33,54 @@
   
   var users = new Array(); 
   var myPath = new paper.Path(); 
-  //var count = users.length;
   var num = Math.floor(Math.random() * 10000);
-  var color; 
-  var colorOptions = ["red", "green", "yellow"];
+  var color = get_rand_color(); 
   
-  function colorPicker() {
-    if (users.length === 0) {
-      color = colorOptions[0];
-      colorOptions[0] = "empty";
-    }
-    else { 
-      //iterate through colors and pick one that isn't === "empty" 
+  var colorOptions = ["red","yellow", "pink", "green"];
+  
+  /*function colorPicker() {  
+    for (x in colorOptions) {
+      if (color === "black") {
+        if (colorOptions[x] !== "empty"){
+        color = colorOptions[x];
+        colorOptions[x] = "empty";
+        return;
+      }
+
+      }
       
     }
-  }
+  }*/
   
-  colorPicker();
-  var idmsg = '{"name": "id", "num": ' + num.toString() +', "color": "'+ color +'"}';
-  console.log(idmsg);
-  socket.onopen = function(event) {
+  
+  socket.onopen = function(event) {    
+    tempString = JSON.stringify(colorOptions);
+    var idmsg = '{"name": "id", "num": ' + num.toString() +', "colors": ["'+ colorOptions[0] +'", "' + colorOptions[1] +'", "' + colorOptions[3] +'"]}'; 
+    console.log("message being sent, "+ idmsg);
     socket.send(idmsg);
-  } ;
-  //socket.send(idmsg);
-  
-
-  //checkUser();
-  /*name my user, send the user name to open screens, open screens will name 
-  on load 
-  */
-
-  
-  //if no input then just keep going 
+    
+  } 
   
   
+  function get_rand_color()
+{
+    var color = Math.floor(Math.random() * Math.pow(256, 3)).toString(16);
+    while(color.length < 6) {
+        color = "0" + color;
+    }
+    return "#" + color;
+}
+  /*var i; 
+  for (i=0; 1<10; i++){
+    //return get_rand_color();
+    console.log("random color: ", get_rand_color());
+  }*/ 
+ 
   
     tool.onMouseMove = function(e) {      
       //need to change colors here 
-      myPath.strokeColor = "black";
+      //colorPicker();
+      myPath.strokeColor = color;
       var cur = [e.point.x, e.point.y];
       var val = '{"name": "point", "value": [' + cur.toString() + ']}';
       //var val = '{"name": "point", "value": [0, 2]}';
@@ -81,7 +91,7 @@
     //triggered when receiving a message from the server
     socket.onmessage = function(msg) {
       //this receives the x and y coordinates and updates the screens accordingly, 
-      console.log(msg.data);
+      console.log("message ", msg);
       
       pt = JSON.parse(msg.data); //does this convert it back into an array ? Where did the brackets go? 
       
@@ -95,9 +105,7 @@
         socket.send(updatedUsers);
       }
       if (pt.name === "users"){
-        console.log("users len: ", users);
         users = pt.value;
-        console.log("users len: ", users);
       }
     } 
     
