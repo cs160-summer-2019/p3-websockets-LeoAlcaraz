@@ -114,6 +114,17 @@
       myPath.add(temp);
     }
   
+ /* window.addEventListener(‘devicemotion’, function(event) {
+      //if tilted to the right, (gamma direction) change color of the pen 
+      alert('Motion Detected');
+  });
+  
+  window.addEventListener(‘deviceorientation’, (event) => {
+      // Device rotation around X-axis, in degrees
+      //console.log(event.beta + ‘deg’);
+      alert(event.beta + 'deg');
+  });*/
+  
     
     socket.onclose = function(e) {
       console.error('Chat socket closed unexpectedly.');
